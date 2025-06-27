@@ -1,0 +1,15 @@
+name: Workflow
+on: 
+  push:
+    branches:
+      - feat-sast
+
+
+jobs:
+  SAST:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hola Mundo
+        run: |
+          echo "primer pipeline"
+          echo "otra linea"
