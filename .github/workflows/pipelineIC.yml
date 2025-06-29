@@ -16,7 +16,7 @@ jobs:
 
       - name: Set up JDK 17
         uses: actions/setup-java@v2
-        whit:
+        with:
           java-version: '17'
           distribution: 'adopt'
 
@@ -29,17 +29,22 @@ jobs:
           ./gradlew build
 
       - name: Validando existencia del proyecto en Sonar
-          curl -u '${{ secrets.SONAR_TOKEN}}:' -X POST 'https://sonarcloud.io/api/projects/create' \
-          -d 'name=${{github.event.repository.name}}' \
-          -d 'organization=giuseppeabn' \
-          -d 'project=github.event.repository.name' \
-          -d 'visibility=public'
-          if [$? -ne 0] then
-            echo 'El proyecto ya existe en SonarCloud'
+        run: |
+          curl -u "${{ secrets.SONAR_TOKEN }}:" -X POST 'https://sonarcloud.io/api/projects/create' \
+          -d "name=${{ github.event.repository.name }}" \
+          -d "organization=giuseppeabn" \
+          -d "project=${{ github.event.repository.name }}" \
+          -d "visibility=public"
+
+          if [ $? -ne 0 ]; then
+            echo "El proyecto ya existe en SonarCloud"
           else
-            echo 'Proyecto creado exitosamente en SonarCloud'
-            curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name-main' -d 'project=${{ github.event.repository.name }}'
+            echo "Proyecto creado exitosamente en SonarCloud"
+            curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" 'https://sonarcloud.io/api/project_branches/rename' \
+            -d "name=main" \
+            -d "project=${{ github.event.repository.name }}"
           fi
+
 
 
 
