@@ -30,25 +30,31 @@ jobs:
 
       - name: Validando existencia del proyecto en Sonar
         run: |
-          curl -u "${{ secrets.SONAR_TOKEN }}:" -X POST 'https://sonarcloud.io/api/projects/create' \
+          response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" -X POST 'https://sonarcloud.io/api/projects/create' \
           -d "name=${{ github.event.repository.name }}" \
           -d "organization=giuseppeabn" \
           -d "project=${{ github.event.repository.name }}" \
-          -d "visibility=public"
+          -d "visibility=public")
 
-          if [ $? -ne 0 ]; then
+          echo "Respuesta de Sonar: $response"
+
+          if echo "$response" | grep -q "key already exists"; then
             echo "El proyecto ya existe en SonarCloud"
           else
             echo "Proyecto creado exitosamente en SonarCloud"
-            curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" 'https://sonarcloud.io/api/project_branches/rename' \
+            rename_response=$(curl -s -X POST -u "${{ secrets.SONAR_TOKEN }}:" 'https://sonarcloud.io/api/project_branches/rename' \
             -d "name=main" \
-            -d "project=${{ github.event.repository.name }}"
-            if [ $? -ne 0 ]; then
+            -d "project=${{ github.event.repository.name }}")
+
+            echo "Respuesta de Rename: $rename_response"
+
+            if echo "$rename_response" | grep -q "doesn't exist"; then
               echo "Error al renombrar rama"
             else
               echo "Rename exitoso"
             fi
           fi
+
 
 
 
